@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.pyc
+
+# Chroma DB klasörleri (pushlama)
+chroma_db*/
+chroma_db_gemini*/
+
+
