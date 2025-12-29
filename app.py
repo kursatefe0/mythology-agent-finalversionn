@@ -1,9 +1,8 @@
 import base64
-import shutil
 from pathlib import Path
 
 import streamlit as st
-from rag import create_qa_chain  # rag.py içinde senin yazdığın fonksiyon
+from rag import create_qa_chain
 
 
 # ============================================================
@@ -12,13 +11,11 @@ from rag import create_qa_chain  # rag.py içinde senin yazdığın fonksiyon
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
 ASSETS_DIR = BASE_DIR / "assets"
-
-# data/ klasörü yoksa otomatik oluştur
 DATA_DIR.mkdir(exist_ok=True)
 
 
 # ============================================================
-# 2) YARDIMCI FONKSİYON: Dosyayı base64'e çevirme
+# 2) YARDIMCI FONKSİYON
 # ============================================================
 def file_to_b64(path: Path) -> str:
     if not path.exists():
@@ -40,7 +37,7 @@ logo_b64 = file_to_b64(ASSETS_DIR / "logo.png")
 
 
 # ============================================================
-# 4) YAN PANEL (SIDEBAR)  -> DB SIFIRLAMA KALDIRILDI
+# 4) YAN PANEL (DB SIFIRLAMA YOK)
 # ============================================================
 with st.sidebar:
     st.header("⚙️ Ayarlar")
@@ -54,13 +51,12 @@ with st.sidebar:
     st.markdown("---")
     st.subheader("🧯 Bakım")
 
-    # Sohbeti temizle: sadece ekrandaki konuşma geçmişini siler
     if st.button("🧹 Sohbeti Temizle"):
         st.session_state.messages = []
 
 
 # ============================================================
-# 5) CSS / GÖRÜNÜM (ARKA PLAN + KART + BUTONLAR)
+# 5) CSS / GÖRÜNÜM
 # ============================================================
 overlay = "rgba(0,0,0,.65)" if theme == "🌙 Koyu" else "rgba(255,255,255,.55)"
 card_bg = "rgba(255,255,255,0.10)" if theme == "🌙 Koyu" else "rgba(255,255,255,0.75)"
@@ -79,7 +75,28 @@ st.markdown(
         color: {text_color};
     }}
 
-    /* İçerik kartı (cam/mermer efekti) */
+    /* ÜST BAR (Streamlit header) */
+    header[data-testid="stHeader"] {{
+        background: #0b1c3d !important;
+    }}
+
+    /* YAN BAR (Sidebar) */
+    section[data-testid="stSidebar"] {{
+        background: #0b1c3d !important;
+    }}
+    section[data-testid="stSidebar"] * {{
+        color: #ffffff !important;
+    }}
+
+    /* Sayfanın altındaki varsayılan beyaz alanlar */
+    footer {{
+        background: #0b1c3d !important;
+    }}
+    div[data-testid="stBottomBlockContainer"] {{
+        background: #0b1c3d !important;
+    }}
+
+    /* İçerik kartı */
     .card {{
         background: {card_bg};
         border: 1px solid rgba(212,175,55,0.40);
@@ -90,7 +107,7 @@ st.markdown(
         margin-top: 18px;
     }}
 
-    /* Altın çizgi (başlık altında dekor) */
+    /* Altın çizgi */
     .goldline {{
         height: 2px;
         background: linear-gradient(90deg, rgba(212,175,55,0),
@@ -99,52 +116,24 @@ st.markdown(
         margin: 10px 0 18px 0;
     }}
 
-    /* === BUTONLAR: ARKA PLAN LACİVERT === */
+    /* BUTONLAR (tümü lacivert) */
     div.stButton > button {{
-        background-color: #0b1c3d;   /* lacivert */
-        color: #ffffff;             /* yazı beyaz */
-        border: 1px solid #1f3c88;
-        border-radius: 10px;
-        padding: 0.45rem 0.8rem;
-        font-weight: 600;
+        background-color: #0b1c3d !important;
+        color: #ffffff !important;
+        border: 1px solid #1f3c88 !important;
+        border-radius: 10px !important;
+        padding: 0.45rem 0.8rem !important;
+        font-weight: 600 !important;
     }}
-
     div.stButton > button:hover {{
-        background-color: #142b5f;
-        color: #ffffff;
-        border-color: #2f5fd0;
+        background-color: #142b5f !important;
+        color: #ffffff !important;
+        border-color: #2f5fd0 !important;
     }}
-
     div.stButton > button:active {{
-        background-color: #09152e;
-        color: #ffffff;
+        background-color: #09152e !important;
+        color: #ffffff !important;
     }}
-
-    /* === ÜST BAR (header) === */
-header[data-testid="stHeader"] {
-    background-color: #0b1c3d !important;
-}
-
-/* === YAN PANEL (sidebar) === */
-section[data-testid="stSidebar"] {
-    background-color: #0b1c3d !important;
-}
-
-/* Sidebar içi yazılar */
-section[data-testid="stSidebar"] * {
-    color: #ffffff !important;
-}
-
-/* === ALT BAR / FOOTER VARSAYILAN ALAN === */
-footer {
-    background-color: #0b1c3d !important;
-}
-
-/* Sayfanın alt boş beyaz kısmı */
-div[data-testid="stBottomBlockContainer"] {
-    background-color: #0b1c3d !important;
-}
-
     </style>
     """,
     unsafe_allow_html=True,
@@ -152,7 +141,7 @@ div[data-testid="stBottomBlockContainer"] {
 
 
 # ============================================================
-# 6) ÜST BAŞLIK (LOGO + BAŞLIK + ALT BAŞLIK)
+# 6) ÜST BAŞLIK
 # ============================================================
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
@@ -174,7 +163,7 @@ st.markdown('<div class="goldline"></div>', unsafe_allow_html=True)
 
 
 # ============================================================
-# 7) ÖRNEK SORULAR + HAZIR BUTONLAR
+# 7) ÖRNEK / HAZIR SORULAR
 # ============================================================
 st.subheader("💡 Örnek Sorular")
 examples = [
@@ -216,7 +205,7 @@ qa = get_chain()
 
 
 # ============================================================
-# 9) CHAT (SOHBET ARAYÜZÜ)
+# 9) CHAT
 # ============================================================
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -244,5 +233,3 @@ if q:
     st.session_state.messages.append({"role": "assistant", "content": ans})
 
 st.markdown("</div>", unsafe_allow_html=True)
-
-
