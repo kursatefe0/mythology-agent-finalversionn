@@ -58,11 +58,6 @@ logo_b64 = file_to_b64(ASSETS_DIR / "logo.png")
 # Sadece: kullanıcı adı, tema, DB sıfırlama, sohbet temizleme var.
 with st.sidebar:
     st.header("⚙️ Ayarlar")
-
-    # Kullanıcı adı: yazınca session_state içine koyuyoruz ki kaybolmasın
-    user_name = st.text_input("👤 İsmin:", value=st.session_state.get("user_name", ""))
-    if user_name:
-        st.session_state.user_name = user_name
  
         # Streamlit cache'ini temizle (get_chain yeniden oluşsun)
         st.cache_resource.clear()
