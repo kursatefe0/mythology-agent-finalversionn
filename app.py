@@ -63,23 +63,7 @@ with st.sidebar:
     user_name = st.text_input("👤 İsmin:", value=st.session_state.get("user_name", ""))
     if user_name:
         st.session_state.user_name = user_name
-
-    # Tema seçimi: sadece arka plan overlay / kart rengi / yazı rengi değişiyor
-    theme = st.radio("🎨 Tema", ["🌙 Koyu", "☀️ Açık"], index=0)
-
-    st.markdown("---")
-    st.subheader("🧯 Bakım")
-
-    # DB sıfırla:
-    # Chroma bazen "hnsw index load" hatası veriyor.
-    # Bu buton chroma_db_gemini* klasörlerini siler ve uygulamayı yeniden başlatır.
-    if st.button("🧯 DB'yi Sıfırla (Chroma)"):
-        deleted = 0
-        for p in BASE_DIR.glob("chroma_db_gemini*"):
-            if p.is_dir():
-                shutil.rmtree(p, ignore_errors=True)
-                deleted += 1
-
+ 
         # Streamlit cache'ini temizle (get_chain yeniden oluşsun)
         st.cache_resource.clear()
 
