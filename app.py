@@ -100,23 +100,17 @@ st.markdown(
         color: {text_color};
     }}
 
-    /* Streamlit ana container bazen ayrı renk basıyor -> sabitle */
     div[data-testid="stAppViewContainer"] {{
         background: transparent !important;
     }}
 
-    /* ÜST BAR (PC’de beyaz kalmasın) */
+    /* Üst bar */
     header[data-testid="stHeader"] {{
         background: {header_bg} !important;
         border-bottom: 1px solid rgba(212,175,55,0.25) !important;
     }}
 
-    /* TOOLBAR alanı (bazen koyu/beyaz karışıyor) */
-    div[data-testid="stToolbar"] {{
-        background: transparent !important;
-    }}
-
-    /* SIDEBAR (PC’de beyaz kalmasın) */
+    /* Sidebar */
     section[data-testid="stSidebar"] {{
         background: {sidebar_bg} !important;
         border-right: 1px solid rgba(212,175,55,0.20) !important;
@@ -125,7 +119,17 @@ st.markdown(
         color: {text_color} !important;
     }}
 
-    /* İçerik kartı (cam/mermer efekti) */
+    /* ===== ALT PANEL / FOOTER ===== */
+    footer,
+    div[data-testid="stStatusWidget"],
+    div[data-testid="stBottomBlockContainer"],
+    div[data-testid="stBottom"] {{
+        background: {header_bg} !important;
+        color: {text_color} !important;
+        border-top: 1px solid rgba(212,175,55,0.25) !important;
+    }}
+
+    /* Kart */
     .card {{
         background: {card_bg};
         border: 1px solid rgba(212,175,55,0.35);
@@ -136,17 +140,8 @@ st.markdown(
         margin-top: 18px;
     }}
 
-    /* Altın çizgi */
-    .goldline {{
-        height: 2px;
-        background: linear-gradient(90deg, rgba(212,175,55,0),
-                                    rgba(212,175,55,1),
-                                    rgba(212,175,55,0));
-        margin: 10px 0 18px 0;
-    }}
-
-    /* Chat input ve text input koyu temaya uyum */
-    .stTextInput > div > div input,
+    /* Inputlar */
+    .stTextInput input,
     textarea {{
         color: {text_color} !important;
         background: rgba(255,255,255,0.08) !important;
@@ -154,14 +149,30 @@ st.markdown(
         border-radius: 12px !important;
     }}
 
-    /* Butonlar */
-    button[kind="secondary"], button[kind="primary"] {{
+    /* ===== BUTONLAR (TÜMÜ LACİVERT) ===== */
+    div.stButton > button,
+    div.stButton > button:hover,
+    div.stButton > button:active,
+    div.stButton > button:focus {{
+        background: rgba(11, 19, 43, 0.95) !important;
+        color: {text_color} !important;
+        border: 1px solid rgba(212,175,55,0.55) !important;
         border-radius: 12px !important;
-    }} 
+        box-shadow: 0 6px 18px rgba(0,0,0,0.35) !important;
+    }}
+
+    /* Chat gönder butonu */
+    button[data-testid="stChatInputSubmitButton"] {{
+        background: rgba(11, 19, 43, 0.95) !important;
+        color: {text_color} !important;
+        border: 1px solid rgba(212,175,55,0.55) !important;
+        border-radius: 12px !important;
+    }}
     </style>
     """,
     unsafe_allow_html=True,
 )
+
 
 
 # ============================================================
