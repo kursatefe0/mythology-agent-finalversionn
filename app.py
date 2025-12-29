@@ -42,9 +42,6 @@ logo_b64 = file_to_b64(ASSETS_DIR / "logo.png")
 with st.sidebar:
     st.header("⚙️ Ayarlar")
 
-    user_name = st.text_input("👤 İsmin:", value=st.session_state.get("user_name", ""))
-    if user_name:
-        st.session_state.user_name = user_name
 
     theme = st.radio("🎨 Tema", ["🌙 Koyu", "☀️ Açık"], index=0)
 
