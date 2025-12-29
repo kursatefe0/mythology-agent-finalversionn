@@ -42,6 +42,10 @@ logo_b64 = file_to_b64(ASSETS_DIR / "logo.png")
 with st.sidebar:
     st.header("⚙️ Ayarlar")
 
+    user_name = st.text_input("👤 İsmin:", value=st.session_state.get("user_name", ""))
+    if user_name:
+        st.session_state.user_name = user_name
+
     theme = st.radio("🎨 Tema", ["🌙 Koyu", "☀️ Açık"], index=0)
 
     st.markdown("---")
@@ -84,25 +88,12 @@ st.markdown(
         color: #ffffff !important;
     }}
 
-    /* =========================
-       ALT PANEL (TAMAMI LACİVERT)
-       ========================= */
-    /* Alt çubuk / footer alanı */
+    /* Sayfanın altındaki varsayılan beyaz alanlar */
     footer {{
-        background-color: #0b1c3d !important;
+        background: #0b1c3d !important;
     }}
-
-    /* Streamlit'in alt bölüm kapsayıcıları (sağ-sol beyaz kalmasın diye hepsi) */
     div[data-testid="stBottomBlockContainer"] {{
-        background-color: #0b1c3d !important;
-    }}
-    div[data-testid="stBottom"] {{
-        background-color: #0b1c3d !important;
-    }}
-
-    /* Bazı sürümlerde alttaki beyaz boşluğu asıl bu container verir */
-    div[data-testid="stMainBlockContainer"] {{
-        background-color: #0b1c3d !important;
+        background: #0b1c3d !important;
     }}
 
     /* İçerik kartı */
@@ -242,4 +233,5 @@ if q:
     st.session_state.messages.append({"role": "assistant", "content": ans})
 
 st.markdown("</div>", unsafe_allow_html=True)
+
 
