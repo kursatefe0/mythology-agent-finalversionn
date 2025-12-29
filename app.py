@@ -93,18 +93,20 @@ with st.sidebar:
 
 
 # ============================================================
-# 5) CSS / GÖRÜNÜM (ARKA PLAN + KART)
+# 5) CSS / GÖRÜNÜM (PC + MOBİL AYNI LACİVERT)
 # ============================================================
-# Tema seçimine göre renkleri ayarlıyoruz
-overlay = "rgba(0,0,0,.65)" if theme == "🌙 Koyu" else "rgba(255,255,255,.55)"
-card_bg = "rgba(255,255,255,0.10)" if theme == "🌙 Koyu" else "rgba(255,255,255,0.75)"
-text_color = "#f5f5f5" if theme == "🌙 Koyu" else "#111111"
 
-# Arka plan resmi yoksa bg_b64 boş olur, yine de sorun olmaz.
+# Sabit lacivert tema (PC'de de mobil gibi olsun diye)
+overlay = "rgba(11, 19, 43, .72)"      # #0b132b üstüne koyu overlay
+sidebar_bg = "rgba(15, 28, 58, .92)"   # sidebar lacivert
+header_bg = "rgba(11, 19, 43, .92)"    # üst bar lacivert
+card_bg = "rgba(255,255,255,0.08)"     # cam kart
+text_color = "#f5f5f5"
+
 st.markdown(
     f"""
     <style>
-    /* Tüm sayfanın arka planı */
+    /* Ana arka plan */
     .stApp {{
         background: linear-gradient({overlay}, {overlay}),
                     url("data:image/jpg;base64,{bg_b64}");
@@ -114,10 +116,35 @@ st.markdown(
         color: {text_color};
     }}
 
+    /* Streamlit ana container bazen ayrı renk basıyor -> sabitle */
+    div[data-testid="stAppViewContainer"] {{
+        background: transparent !important;
+    }}
+
+    /* ÜST BAR (PC’de beyaz kalmasın) */
+    header[data-testid="stHeader"] {{
+        background: {header_bg} !important;
+        border-bottom: 1px solid rgba(212,175,55,0.25) !important;
+    }}
+
+    /* TOOLBAR alanı (bazen koyu/beyaz karışıyor) */
+    div[data-testid="stToolbar"] {{
+        background: transparent !important;
+    }}
+
+    /* SIDEBAR (PC’de beyaz kalmasın) */
+    section[data-testid="stSidebar"] {{
+        background: {sidebar_bg} !important;
+        border-right: 1px solid rgba(212,175,55,0.20) !important;
+    }}
+    section[data-testid="stSidebar"] * {{
+        color: {text_color} !important;
+    }}
+
     /* İçerik kartı (cam/mermer efekti) */
     .card {{
         background: {card_bg};
-        border: 1px solid rgba(212,175,55,0.40);
+        border: 1px solid rgba(212,175,55,0.35);
         box-shadow: 0 10px 35px rgba(0,0,0,0.45);
         backdrop-filter: blur(10px);
         border-radius: 18px;
@@ -125,13 +152,27 @@ st.markdown(
         margin-top: 18px;
     }}
 
-    /* Altın çizgi (başlık altında dekor) */
+    /* Altın çizgi */
     .goldline {{
         height: 2px;
         background: linear-gradient(90deg, rgba(212,175,55,0),
                                     rgba(212,175,55,1),
                                     rgba(212,175,55,0));
         margin: 10px 0 18px 0;
+    }}
+
+    /* Chat input ve text input koyu temaya uyum */
+    .stTextInput > div > div input,
+    textarea {{
+        color: {text_color} !important;
+        background: rgba(255,255,255,0.08) !important;
+        border: 1px solid rgba(212,175,55,0.25) !important;
+        border-radius: 12px !important;
+    }}
+
+    /* Butonlar */
+    button[kind="secondary"], button[kind="primary"] {{
+        border-radius: 12px !important;
     }}
     </style>
     """,
