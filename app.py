@@ -9,13 +9,8 @@ from rag import create_qa_chain  # rag.py içinde senin yazdığın fonksiyon
 # ============================================================
 # 1) KLASÖR/YOL AYARLARI
 # ============================================================
-# Bu dosyanın bulunduğu klasör = proje klasörü
 BASE_DIR = Path(__file__).parent
-
-# Belgeleri okuyacağımız klasör (PDF/TXT dosyalarını buraya koyuyorsun)
 DATA_DIR = BASE_DIR / "data"
-
-# Arka plan / logo gibi görsellerin klasörü
 ASSETS_DIR = BASE_DIR / "assets"
 
 # data/ klasörü yoksa otomatik oluştur
@@ -25,8 +20,6 @@ DATA_DIR.mkdir(exist_ok=True)
 # ============================================================
 # 2) YARDIMCI FONKSİYON: Dosyayı base64'e çevirme
 # ============================================================
-# Streamlit'in arka planına resim koymak için resmi CSS'e gömüyoruz.
-# Bunun için görseli base64 string'e çeviriyoruz.
 def file_to_b64(path: Path) -> str:
     if not path.exists():
         return ""
@@ -42,65 +35,37 @@ st.set_page_config(
     layout="centered",
 )
 
-# assets/bg.jpg varsa arka plan olarak kullanılacak
 bg_b64 = file_to_b64(ASSETS_DIR / "bg.jpg")
-
-# assets/logo.png varsa üstte logo olarak kullanılacak (opsiyonel)
 logo_b64 = file_to_b64(ASSETS_DIR / "logo.png")
 
 
 # ============================================================
-# 4) YAN PANEL (SIDEBAR)
+# 4) YAN PANEL (SIDEBAR)  -> DB SIFIRLAMA KALDIRILDI
 # ============================================================
-# İSTEDİĞİN GİBİ:
-# - Dosya yükleme yok
-# - Yüklü dosyalar listesi yok
-# Sadece: kullanıcı adı, tema, DB sıfırlama, sohbet temizleme var.
 with st.sidebar:
     st.header("⚙️ Ayarlar")
 
-    # Kullanıcı adı: yazınca session_state içine koyuyoruz ki kaybolmasın
     user_name = st.text_input("👤 İsmin:", value=st.session_state.get("user_name", ""))
     if user_name:
         st.session_state.user_name = user_name
 
-    # Tema seçimi: sadece arka plan overlay / kart rengi / yazı rengi değişiyor
     theme = st.radio("🎨 Tema", ["🌙 Koyu", "☀️ Açık"], index=0)
 
     st.markdown("---")
     st.subheader("🧯 Bakım")
 
-    # DB sıfırla:
-    # Chroma bazen "hnsw index load" hatası veriyor.
-    # Bu buton chroma_db_gemini* klasörlerini siler ve uygulamayı yeniden başlatır.
-    if st.button("🧯 DB'yi Sıfırla (Chroma)"):
-        deleted = 0
-        for p in BASE_DIR.glob("chroma_db_gemini*"):
-            if p.is_dir():
-                shutil.rmtree(p, ignore_errors=True)
-                deleted += 1
-
-        # Streamlit cache'ini temizle (get_chain yeniden oluşsun)
-        st.cache_resource.clear()
-
-        st.success(f"DB sıfırlandı. Silinen klasör sayısı: {deleted}. Yenileniyor…")
-        st.rerun()
-
-    # Sohbeti temizle:
-    # Sadece ekrandaki konuşma geçmişini siler. DB'ye dokunmaz.
+    # Sohbeti temizle: sadece ekrandaki konuşma geçmişini siler
     if st.button("🧹 Sohbeti Temizle"):
         st.session_state.messages = []
 
 
 # ============================================================
-# 5) CSS / GÖRÜNÜM (ARKA PLAN + KART)
+# 5) CSS / GÖRÜNÜM (ARKA PLAN + KART + BUTONLAR)
 # ============================================================
-# Tema seçimine göre renkleri ayarlıyoruz
 overlay = "rgba(0,0,0,.65)" if theme == "🌙 Koyu" else "rgba(255,255,255,.55)"
 card_bg = "rgba(255,255,255,0.10)" if theme == "🌙 Koyu" else "rgba(255,255,255,0.75)"
 text_color = "#f5f5f5" if theme == "🌙 Koyu" else "#111111"
 
-# Arka plan resmi yoksa bg_b64 boş olur, yine de sorun olmaz.
 st.markdown(
     f"""
     <style>
@@ -133,6 +98,27 @@ st.markdown(
                                     rgba(212,175,55,0));
         margin: 10px 0 18px 0;
     }}
+
+    /* === BUTONLAR: ARKA PLAN LACİVERT === */
+    div.stButton > button {{
+        background-color: #0b1c3d;   /* lacivert */
+        color: #ffffff;             /* yazı beyaz */
+        border: 1px solid #1f3c88;
+        border-radius: 10px;
+        padding: 0.45rem 0.8rem;
+        font-weight: 600;
+    }}
+
+    div.stButton > button:hover {{
+        background-color: #142b5f;
+        color: #ffffff;
+        border-color: #2f5fd0;
+    }}
+
+    div.stButton > button:active {{
+        background-color: #09152e;
+        color: #ffffff;
+    }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -146,7 +132,6 @@ st.markdown('<div class="card">', unsafe_allow_html=True)
 
 col1, col2 = st.columns([1, 5])
 with col1:
-    # Logo yoksa emoji göster
     if logo_b64:
         st.image(f"data:image/png;base64,{logo_b64}", width=64)
     else:
@@ -154,8 +139,6 @@ with col1:
 
 with col2:
     st.title("Mitoloji Ansiklopedisi Ajanı")
-
-    # Kullanıcı adını aldıysak kişisel karşılama yaz
     if st.session_state.get("user_name"):
         st.caption(f"Hoş geldin, **{st.session_state.user_name}** ⚡")
     else:
@@ -167,7 +150,6 @@ st.markdown('<div class="goldline"></div>', unsafe_allow_html=True)
 # ============================================================
 # 7) ÖRNEK SORULAR + HAZIR BUTONLAR
 # ============================================================
-# Bu butonlara basınca soru otomatik chat input gibi gönderilecek (pending_q)
 st.subheader("💡 Örnek Sorular")
 examples = [
     "Zeus kimdir?",
@@ -198,16 +180,8 @@ if c6.button("Artemis"):
 
 
 # ============================================================
-# 8) RAG ZİNCİRİNİ OLUŞTURMA (CACHE)
+# 8) RAG ZİNCİRİ (CACHE)
 # ============================================================
-# create_qa_chain() genelde şunları yapar:
-# - data/ klasöründeki dosyaları okur
-# - embeddings üretir
-# - Chroma DB'yi yükler veya oluşturur
-# - retriever ile ilgili parçaları çeker
-# - Gemini'ye prompt atıp cevap döndürür
-#
-# @st.cache_resource ile 1 kez oluşturulur, sayfa yenilense bile tekrar tekrar kurmaz.
 @st.cache_resource
 def get_chain():
     return create_qa_chain()
@@ -218,27 +192,19 @@ qa = get_chain()
 # ============================================================
 # 9) CHAT (SOHBET ARAYÜZÜ)
 # ============================================================
-# Konuşma geçmişini st.session_state içinde tutuyoruz.
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Geçmiş mesajları ekrana bas
 for m in st.session_state.messages:
     with st.chat_message(m["role"]):
         st.markdown(m["content"])
 
-# Kullanıcı chat input'u
 q = st.chat_input("Sorunu yaz...")
 
-# Eğer örnek/hazır butondan soru geldiyse onu al
 if (not q) and ("pending_q" in st.session_state):
     q = st.session_state.pending_q
     del st.session_state.pending_q
 
-# Soru varsa:
-# - konuşma geçmişine ekle
-# - ekrana yaz
-# - qa(q) ile cevabı al
 if q:
     st.session_state.messages.append({"role": "user", "content": q})
     with st.chat_message("user"):
@@ -251,6 +217,6 @@ if q:
 
     st.session_state.messages.append({"role": "assistant", "content": ans})
 
-# Kartı kapat
 st.markdown("</div>", unsafe_allow_html=True)
+
 
