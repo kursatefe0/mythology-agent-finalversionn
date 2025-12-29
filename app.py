@@ -174,33 +174,6 @@ st.markdown(
     button[kind="secondary"], button[kind="primary"] {{
         border-radius: 12px !important;
     }} 
-
-    /* Tüm butonları koyu/lacivert yap */
-.stButton > button,
-button[data-testid="baseButton-secondary"],
-button[data-testid="baseButton-primary"],
-button[data-testid="baseButton-minimal"] {
-    background: rgba(255,255,255,0.08) !important;
-    color: #f5f5f5 !important;
-    border: 1px solid rgba(212,175,55,0.35) !important;
-    border-radius: 12px !important;
-}
-
-/* Hover efekti */
-.stButton > button:hover,
-button[data-testid="baseButton-secondary"]:hover,
-button[data-testid="baseButton-primary"]:hover,
-button[data-testid="baseButton-minimal"]:hover {
-    background: rgba(255,255,255,0.14) !important;
-    border-color: rgba(212,175,55,0.65) !important;
-}
-
-/* Odak/aktif (tıklayınca) */
-.stButton > button:focus,
-.stButton > button:active {
-    outline: none !important;
-    box-shadow: 0 0 0 3px rgba(212,175,55,0.18) !important;
-}
     </style>
     """,
     unsafe_allow_html=True,
