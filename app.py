@@ -163,6 +163,25 @@ st.markdown(
         border: 1px solid rgba(212,175,55,0.55) !important;
         border-radius: 12px !important;
     }}
+
+    /* ===== CHAT RENKLERİ ===== */
+
+/* Asistan yanıtları -> beyaz */
+div[data-testid="stChatMessage"][data-role="assistant"] *,
+div[data-testid="stChatMessage"][data-role="assistant"] p,
+div[data-testid="stChatMessage"][data-role="assistant"] span,
+div[data-testid="stChatMessage"][data-role="assistant"] li {
+    color: #ffffff !important;
+}
+
+/* Kullanıcı mesajları -> siyah */
+div[data-testid="stChatMessage"][data-role="user"] *,
+div[data-testid="stChatMessage"][data-role="user"] p,
+div[data-testid="stChatMessage"][data-role="user"] span,
+div[data-testid="stChatMessage"][data-role="user"] li {
+    color: #000000 !important;
+}
+
     </style>
     """,
     unsafe_allow_html=True,
