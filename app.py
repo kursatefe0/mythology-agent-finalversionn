@@ -1,5 +1,4 @@
 import base64
-import shutil
 from pathlib import Path
 
 import streamlit as st
@@ -9,24 +8,15 @@ from rag import create_qa_chain  # rag.py içinde senin yazdığın fonksiyon
 # ============================================================
 # 1) KLASÖR/YOL AYARLARI
 # ============================================================
-# Bu dosyanın bulunduğu klasör = proje klasörü
 BASE_DIR = Path(__file__).parent
-
-# Belgeleri okuyacağımız klasör (PDF/TXT dosyalarını buraya koyuyorsun)
 DATA_DIR = BASE_DIR / "data"
-
-# Arka plan / logo gibi görsellerin klasörü
 ASSETS_DIR = BASE_DIR / "assets"
-
-# data/ klasörü yoksa otomatik oluştur
 DATA_DIR.mkdir(exist_ok=True)
 
 
 # ============================================================
 # 2) YARDIMCI FONKSİYON: Dosyayı base64'e çevirme
 # ============================================================
-# Streamlit'in arka planına resim koymak için resmi CSS'e gömüyoruz.
-# Bunun için görseli base64 string'e çeviriyoruz.
 def file_to_b64(path: Path) -> str:
     if not path.exists():
         return ""
@@ -42,31 +32,25 @@ st.set_page_config(
     layout="centered",
 )
 
-# assets/bg.jpg varsa arka plan olarak kullanılacak
 bg_b64 = file_to_b64(ASSETS_DIR / "bg.jpg")
-
-# assets/logo.png varsa üstte logo olarak kullanılacak (opsiyonel)
 logo_b64 = file_to_b64(ASSETS_DIR / "logo.png")
 
 
 # ============================================================
-# 4) YAN PANEL (SIDEBAR)
+# 4) YAN PANEL (SIDEBAR) - DB SIFIRLAMA YOK
 # ============================================================
-# İSTEDİĞİN GİBİ:
-# - Dosya yükleme yok
-# - Yüklü dosyalar listesi yok
-# Sadece: kullanıcı adı, tema, DB sıfırlama, sohbet temizleme var.
 with st.sidebar:
     st.header("⚙️ Ayarlar")
- 
-        # Streamlit cache'ini temizle (get_chain yeniden oluşsun)
-        st.cache_resource.clear()
 
-        st.success(f"DB sıfırlandı. Silinen klasör sayısı: {deleted}. Yenileniyor…")
-        st.rerun()
+    user_name = st.text_input("👤 İsmin:", value=st.session_state.get("user_name", ""))
+    if user_name:
+        st.session_state.user_name = user_name
 
-    # Sohbeti temizle:
-    # Sadece ekrandaki konuşma geçmişini siler. DB'ye dokunmaz.
+    # Tema seçimi (şimdilik sadece seçili kalsın diye duruyor)
+    theme = st.radio("🎨 Tema", ["🌙 Koyu", "☀️ Açık"], index=0)
+
+    st.markdown("---")
+
     if st.button("🧹 Sohbeti Temizle"):
         st.session_state.messages = []
 
@@ -74,8 +58,6 @@ with st.sidebar:
 # ============================================================
 # 5) CSS / GÖRÜNÜM (PC + MOBİL AYNI LACİVERT)
 # ============================================================
-
-# Sabit lacivert tema (PC'de de mobil gibi olsun diye)
 overlay = "rgba(11, 19, 43, .72)"      # #0b132b üstüne koyu overlay
 sidebar_bg = "rgba(15, 28, 58, .92)"   # sidebar lacivert
 header_bg = "rgba(11, 19, 43, .92)"    # üst bar lacivert
@@ -85,6 +67,14 @@ text_color = "#f5f5f5"
 st.markdown(
     f"""
     <style>
+    /* ===== ROOT ARKAPLANI (beyaz kenarları öldürür) ===== */
+    html, body {{
+        background: {header_bg} !important;
+    }}
+    #root, .stApp {{
+        background: {header_bg} !important;
+    }}
+
     /* Ana arka plan */
     .stApp {{
         background: linear-gradient({overlay}, {overlay}),
@@ -99,13 +89,18 @@ st.markdown(
         background: transparent !important;
     }}
 
-    /* Üst bar */
+    /* ÜST BAR */
     header[data-testid="stHeader"] {{
         background: {header_bg} !important;
         border-bottom: 1px solid rgba(212,175,55,0.25) !important;
     }}
 
-    /* Sidebar */
+    /* TOOLBAR */
+    div[data-testid="stToolbar"] {{
+        background: transparent !important;
+    }}
+
+    /* SIDEBAR */
     section[data-testid="stSidebar"] {{
         background: {sidebar_bg} !important;
         border-right: 1px solid rgba(212,175,55,0.20) !important;
@@ -114,17 +109,28 @@ st.markdown(
         color: {text_color} !important;
     }}
 
-    /* ===== ALT PANEL / FOOTER ===== */
+    /* ALT PANEL / FOOTER full width */
     footer,
     div[data-testid="stStatusWidget"],
     div[data-testid="stBottomBlockContainer"],
     div[data-testid="stBottom"] {{
+        width: 100vw !important;
+        left: 0 !important;
+        right: 0 !important;
         background: {header_bg} !important;
         color: {text_color} !important;
         border-top: 1px solid rgba(212,175,55,0.25) !important;
     }}
+    div[data-testid="stBottomBlockContainer"] > div,
+    div[data-testid="stBottom"] > div {{
+        max-width: none !important;
+        width: 100% !important;
+    }}
+    div.block-container {{
+        padding-bottom: 90px !important;
+    }}
 
-    /* Kart */
+    /* İçerik kartı */
     .card {{
         background: {card_bg};
         border: 1px solid rgba(212,175,55,0.35);
@@ -135,8 +141,17 @@ st.markdown(
         margin-top: 18px;
     }}
 
+    /* Altın çizgi */
+    .goldline {{
+        height: 2px;
+        background: linear-gradient(90deg, rgba(212,175,55,0),
+                                    rgba(212,175,55,1),
+                                    rgba(212,175,55,0));
+        margin: 10px 0 18px 0;
+    }}
+
     /* Inputlar */
-    .stTextInput input,
+    .stTextInput > div > div input,
     textarea {{
         color: {text_color} !important;
         background: rgba(255,255,255,0.08) !important;
@@ -144,7 +159,7 @@ st.markdown(
         border-radius: 12px !important;
     }}
 
-    /* ===== BUTONLAR (TÜMÜ LACİVERT) ===== */
+    /* ===== BUTONLAR (LACİVERT) ===== */
     div.stButton > button,
     div.stButton > button:hover,
     div.stButton > button:active,
@@ -165,38 +180,33 @@ st.markdown(
     }}
 
     /* ===== CHAT RENKLERİ ===== */
+    /* Asistan: beyaz */
+    div[data-testid="stChatMessage"][data-role="assistant"] * {{
+        color: #ffffff !important;
+    }}
 
-/* Asistan yanıtları -> beyaz */
-div[data-testid="stChatMessage"][data-role="assistant"] *,
-div[data-testid="stChatMessage"][data-role="assistant"] p,
-div[data-testid="stChatMessage"][data-role="assistant"] span,
-div[data-testid="stChatMessage"][data-role="assistant"] li {
-    color: #ffffff !important;
-}
-
-/* Kullanıcı mesajları -> siyah */
-div[data-testid="stChatMessage"][data-role="user"] *,
-div[data-testid="stChatMessage"][data-role="user"] p,
-div[data-testid="stChatMessage"][data-role="user"] span,
-div[data-testid="stChatMessage"][data-role="user"] li {
-    color: #000000 !important;
-}
-
+    /* Kullanıcı: siyah + balon açık renk olsun ki siyah yazı görünsün */
+    div[data-testid="stChatMessage"][data-role="user"] {{
+        background: rgba(255,255,255,0.92) !important;
+        border-radius: 12px !important;
+        padding: 6px !important;
+    }}
+    div[data-testid="stChatMessage"][data-role="user"] * {{
+        color: #000000 !important;
+    }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 
-
 # ============================================================
-# 6) ÜST BAŞLIK (LOGO + BAŞLIK + ALT BAŞLIK)
+# 6) ÜST BAŞLIK
 # ============================================================
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
 col1, col2 = st.columns([1, 5])
 with col1:
-    # Logo yoksa emoji göster
     if logo_b64:
         st.image(f"data:image/png;base64,{logo_b64}", width=64)
     else:
@@ -204,8 +214,6 @@ with col1:
 
 with col2:
     st.title("Mitoloji Ansiklopedisi Ajanı")
-
-    # Kullanıcı adını aldıysak kişisel karşılama yaz
     if st.session_state.get("user_name"):
         st.caption(f"Hoş geldin, **{st.session_state.user_name}** ⚡")
     else:
@@ -217,7 +225,6 @@ st.markdown('<div class="goldline"></div>', unsafe_allow_html=True)
 # ============================================================
 # 7) ÖRNEK SORULAR + HAZIR BUTONLAR
 # ============================================================
-# Bu butonlara basınca soru otomatik chat input gibi gönderilecek (pending_q)
 st.subheader("💡 Örnek Sorular")
 examples = [
     "Zeus kimdir?",
@@ -248,16 +255,8 @@ if c6.button("Artemis"):
 
 
 # ============================================================
-# 8) RAG ZİNCİRİNİ OLUŞTURMA (CACHE)
+# 8) RAG ZİNCİRİ (CACHE)
 # ============================================================
-# create_qa_chain() genelde şunları yapar:
-# - data/ klasöründeki dosyaları okur
-# - embeddings üretir
-# - Chroma DB'yi yükler veya oluşturur
-# - retriever ile ilgili parçaları çeker
-# - Gemini'ye prompt atıp cevap döndürür
-#
-# @st.cache_resource ile 1 kez oluşturulur, sayfa yenilense bile tekrar tekrar kurmaz.
 @st.cache_resource
 def get_chain():
     return create_qa_chain()
@@ -266,29 +265,21 @@ qa = get_chain()
 
 
 # ============================================================
-# 9) CHAT (SOHBET ARAYÜZÜ)
+# 9) CHAT
 # ============================================================
-# Konuşma geçmişini st.session_state içinde tutuyoruz.
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Geçmiş mesajları ekrana bas
 for m in st.session_state.messages:
     with st.chat_message(m["role"]):
         st.markdown(m["content"])
 
-# Kullanıcı chat input'u
 q = st.chat_input("Sorunu yaz...")
 
-# Eğer örnek/hazır butondan soru geldiyse onu al
 if (not q) and ("pending_q" in st.session_state):
     q = st.session_state.pending_q
     del st.session_state.pending_q
 
-# Soru varsa:
-# - konuşma geçmişine ekle
-# - ekrana yaz
-# - qa(q) ile cevabı al
 if q:
     st.session_state.messages.append({"role": "user", "content": q})
     with st.chat_message("user"):
@@ -301,5 +292,4 @@ if q:
 
     st.session_state.messages.append({"role": "assistant", "content": ans})
 
-# Kartı kapat
 st.markdown("</div>", unsafe_allow_html=True)
