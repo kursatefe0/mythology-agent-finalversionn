@@ -119,6 +119,32 @@ st.markdown(
         background-color: #09152e;
         color: #ffffff;
     }}
+
+    /* === ÜST BAR (header) === */
+header[data-testid="stHeader"] {
+    background-color: #0b1c3d !important;
+}
+
+/* === YAN PANEL (sidebar) === */
+section[data-testid="stSidebar"] {
+    background-color: #0b1c3d !important;
+}
+
+/* Sidebar içi yazılar */
+section[data-testid="stSidebar"] * {
+    color: #ffffff !important;
+}
+
+/* === ALT BAR / FOOTER VARSAYILAN ALAN === */
+footer {
+    background-color: #0b1c3d !important;
+}
+
+/* Sayfanın alt boş beyaz kısmı */
+div[data-testid="stBottomBlockContainer"] {
+    background-color: #0b1c3d !important;
+}
+
     </style>
     """,
     unsafe_allow_html=True,
